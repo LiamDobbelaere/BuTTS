@@ -2,10 +2,11 @@ package paw.test;
 
 import org.junit.Before;
 import org.junit.Test;
+import paw.tts.PhonemeBank;
 import paw.tts.PhonemeFileReader;
-import paw.tts.PhonemeSet;
 
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * Created by Digaly on 26/05/2016.
@@ -17,16 +18,16 @@ public class PhonemeFileReaderTest
     @Before
     public void setUp() throws Exception
     {
-        File file = new File(getClass().getResource("/cmudict-test.dict").toURI());
+        String location = "/cmudict-test.dict";
 
-        fileReader = new PhonemeFileReader(file);
+        fileReader = new PhonemeFileReader(location);
     }
 
     @Test
     public void readNext() throws Exception
     {
-        PhonemeSet[] bank = fileReader.getPhonemeBank();
+        PhonemeBank bank = fileReader.getPhonemeBank();
 
-        assert(bank[120].getWord().equals("ABDUCT"));
+        assert(Arrays.equals(bank.getWord("ABORT"), new String[] {"AH0", "B" ,"AO1", "R", "T"}));
     }
 }

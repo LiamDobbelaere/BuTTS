@@ -1,7 +1,11 @@
 package paw.tts;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.Buffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,24 +16,30 @@ import java.util.List;
 public class PhonemeFileReader
 {
     private BufferedReader reader;
-    private PhonemeSet[] phonemeBank;
+    private PhonemeBank phonemeBank;
 
-    public PhonemeFileReader(File file) throws IOException
+    public PhonemeFileReader(String location) throws IOException, URISyntaxException
     {
-        reader = new BufferedReader(Files.newBufferedReader(file.toPath()));
+        File file = new File(getClass().getResource(location).toURI());
+
+        FileInputStream input = new FileInputStream(file);
+        CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder();
+        decoder.onMalformedInput(CodingErrorAction.IGNORE);
+        InputStreamReader inputStreamReader = new InputStreamReader(input, decoder);
+
+        reader = new BufferedReader(inputStreamReader);
+        phonemeBank = new PhonemeBank();
 
         build();
     }
 
-    private PhonemeSet readNext()
+    private void build()
     {
-        PhonemeSet phonemeSet = null;
-
         try
         {
             String line = reader.readLine();
 
-            if (line != null)
+            while (line != null)
             {
                 int wordEnd = line.indexOf("  ");
 
@@ -38,32 +48,18 @@ public class PhonemeFileReader
                 String phonemeLine = line.substring(wordEnd + 2);
                 String[] phonemes = phonemeLine.split(" ");
 
-                phonemeSet = new PhonemeSet(word, phonemes);
+                phonemeBank.addWord(word, phonemes);
+
+                line = reader.readLine();
             }
         }
         catch (IOException e)
         {
-
+            e.printStackTrace();
         }
-
-        return phonemeSet;
     }
 
-    private void build() {
-        PhonemeSet currentSet = readNext();
-        ArrayList<PhonemeSet> tempBank = new ArrayList<>();
-
-        while (currentSet != null)
-        {
-            tempBank.add(currentSet);
-
-            currentSet = readNext();
-        }
-
-        phonemeBank = tempBank.toArray(new PhonemeSet[tempBank.size()]);
-    }
-
-    public PhonemeSet[] getPhonemeBank()
+    public PhonemeBank getPhonemeBank()
     {
         return phonemeBank;
     }
