@@ -1,2 +1,2 @@
 # PAW
-#### Perpetual Artificial World
+Abandoned project, but contains a fully functional text to speech system.
